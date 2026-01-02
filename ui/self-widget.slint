@@ -1,0 +1,86 @@
+import { UAppTheme, UColorScheme } from "sleek-ui/app-theme.slint";
+import { UText, UTitle, UPopover, UTabs, UButton } from "sleek-ui/widgets.slint";
+import { UButtonTheme, UButtonThemes, UButtonThemeColor } from "sleek-ui/widgets/button/theme.slint";
+import "Fonts/Asimovian-Regular.ttf";
+import "Fonts/Kanit-Light.ttf";
+import "Fonts/Ubuntu-Light.ttf";
+import { VerticalBox } from "std-widgets.slint";
+
+export enum UButtonVariant {
+	primary,
+	default,
+	filled,
+	text,
+}
+
+export component SideBar inherits Rectangle {
+    in property <length> sidebar_width: 150px;
+    in property <length> sidebar_height: 600px;
+    in property <length> sidebar_btwidth: 125px;
+    in property <length> sidebar_btheight: 35px;
+    in property <length> sidebar_btspace: 8px;
+
+    in property <color> sidebar_btcolor: rgb(30,0,105);
+    in property <color> sidebar_bthovercolor: rgb(30,0,55);
+
+    in property <string> sidebar_btfontfamily: "Kanit";
+
+    in-out property <UButtonVariant> variant: default;
+    property <UButtonTheme> theme: {
+        if variant == UButtonVariant.primary {
+            return UButtonThemes.primary;
+        }
+        if variant == UButtonVariant.filled {
+            return UButtonThemes.filled;
+        }
+        if variant == UButtonVariant.text {
+            return UButtonThemes.text;
+        }
+        return UButtonThemes.default;
+    };
+
+    in property <color> sidebar_bgcolor: rgb(1,4,30);
+    in property <[string]> menu_items: ["Home", "Settings", "Privacy"];
+    in property <int> active_item: 0;
+
+    callback item_selected(int, string);
+
+    width: sidebar_width;
+    height: sidebar_height;
+    background: sidebar_bgcolor; 
+
+    
+
+    VerticalBox {
+        alignment: start;
+        spacing: sidebar_btspace;
+        padding: 15px;
+
+        @children
+
+        // Dinamik Buton Listesi
+
+        for item[index] in root.menu_items : UButton {
+            text: item;
+            variant: primary;
+            background: sidebar_btcolor;
+            colorize-icon: true;
+            horizontal-stretch: 1;
+            
+            width: sidebar_btwidth;
+            height: sidebar_btheight;
+            checked: true;
+            
+            states [
+                hover when self.has-hover: {
+                    color: !self.loading ? sidebar_bthovercolor : transparent;
+                }
+            ]
+
+            clicked => {
+                root.item_selected(index, item);
+            }
+        }
+    }
+
+}

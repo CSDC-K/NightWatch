@@ -1,0 +1,114 @@
+import { UAppTheme, UColorScheme } from "sleek-ui/app-theme.slint";
+import { UText, UTitle, UPopover, UTabs, UButton, UIconButton } from "sleek-ui/widgets.slint";
+import { SideBar } from "self-widget.slint";
+import "Fonts/Asimovian-Regular.ttf";
+import "Fonts/Kanit-Light.ttf";
+import "Fonts/Ubuntu-Light.ttf";
+export { UAppTheme, UColorScheme }
+
+export component AppWindow inherits Window {
+    default-font-family: "Ubuntu";
+    width: 900px;
+    height: 600px;
+    background: rgb(1,4,23);
+
+    title: "Night Watch";
+
+    // Property to track sidebar visibility
+    in-out property <bool> sidebar_visible: false;
+    
+    // Left rail width and sidebar width for flexible positioning
+    property <length> rail_width: 40px;
+    property <length> sidebar_width: 150px;
+
+    // Animated SideBar (positioned next to the rail)
+    sidebar := SideBar {
+        x: 40px;
+        y: 0px;
+        
+        states [
+            visible when sidebar_visible: {
+                x: 40px;
+                in { animate x { duration: 300ms; easing: ease-in-out; } }
+                out { animate x { duration: 300ms; easing: ease-in-out; } }
+            }
+            hidden when !sidebar_visible: {
+                x: -110px;
+                in { animate x { duration: 300ms; easing: ease-in-out; } }
+                out { animate x { duration: 300ms; easing: ease-in-out; } }
+            }
+        ]
+    }
+
+    // Main content area with flexible positioning
+    content := Rectangle {
+        x: 40px;
+        y: 0px;
+        width: root.width - 40px;
+        height: parent.height;
+        background: transparent;
+        
+        states [
+            expanded when sidebar_visible: {
+                x: 190px;
+                width: root.width - 190px;
+                in { 
+                    animate x { duration: 300ms; easing: ease-in-out; } 
+                    animate width { duration: 300ms; easing: ease-in-out; }
+                }
+                out { 
+                    animate x { duration: 300ms; easing: ease-in-out; } 
+                    animate width { duration: 300ms; easing: ease-in-out; }
+                }
+            }
+            collapsed when !sidebar_visible: {
+                x: 40px;
+                width: root.width - 40px;
+                in { 
+                    animate x { duration: 300ms; easing: ease-in-out; } 
+                    animate width { duration: 300ms; easing: ease-in-out; }
+                }
+                out { 
+                    animate x { duration: 300ms; easing: ease-in-out; } 
+                    animate width { duration: 300ms; easing: ease-in-out; }
+                }
+            }
+        ]
+
+        UTitle {
+            level: 2;
+            text: "Welcome To NightWatch";
+            font-family: "Asimovian";
+            color: rgb(146,210,249);
+            y: 35px;
+            x: (parent.width - self.preferred-width) / 2;
+        }
+    }
+
+    // Left side rail (thin rectangle covering full height) - on top
+    Rectangle {
+        x: 0px;
+        y: 0px;
+        width: rail_width;
+        height: parent.height;
+        background: rgb(15, 2, 50);
+
+        // Toggle button inside the rail
+        UIconButton {
+            x: 5px;
+            y: 10px;
+            width: 30px;
+            height: 30px;
+            icon: sidebar_visible ? @image-url("icons/menu.svg") : @image-url("icons/cross.svg");
+            icon-size: 20px;
+            icon-padding: 0px;
+            colorize-icon: false;
+            variant: primary;
+            background: rgb(30, 0, 105);
+            
+            clicked => {
+                sidebar_visible = !sidebar_visible;
+            }
+        }
+    }
+}
