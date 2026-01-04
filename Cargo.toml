@@ -6,6 +6,10 @@ edition = "2024"
 [dependencies]
 slint = "1.14.1"
 sleek-ui = { git = "https://github.com/uAtomicBoolean/sleek-ui" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+chrono = "0.4"
+dirs = "5.0"
 
 [build-dependencies]
 slint-build = "1.14.1"

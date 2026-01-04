@@ -1,0 +1,154 @@
+import { UAppTheme, UColorScheme } from "../sleek-ui/app-theme.slint";
+import { UText, UTitle, UButton, USwitch } from "../sleek-ui/widgets.slint";
+import "../Fonts/Asimovian-Regular.ttf";
+
+export component SettingsPage inherits Rectangle {
+    in property <bool> is-active: false;
+    in-out property <bool> dark_mode: true;
+    
+    callback theme_changed(bool);
+    
+    background: transparent;
+    visible: is-active;
+    
+    VerticalLayout {
+        alignment: start;
+        spacing: 25px;
+        padding: 40px;
+        
+        UTitle {
+            level: 2;
+            text: "Settings";
+            font-family: "Asimovian";
+            color: rgb(146, 210, 249);
+        }
+        
+        Rectangle {
+            height: 1px;
+            background: rgb(50, 50, 80);
+        }
+        
+        // Settings sections
+        VerticalLayout {
+            spacing: 20px;
+            
+            // Theme Settings
+            Rectangle {
+                background: rgb(20, 15, 50);
+                border-radius: 10px;
+                height: 80px;
+                
+                HorizontalLayout {
+                    padding: 20px;
+                    alignment: space-between;
+                    
+                    VerticalLayout {
+                        alignment: center;
+                        spacing: 5px;
+                        
+                        UText {
+                            text: "Dark Mode";
+                            color: rgb(200, 200, 220);
+                            font-size: 16px;
+                        }
+                        
+                        UText {
+                            text: dark_mode ? "Dark theme enabled" : "Light theme enabled";
+                            color: rgb(100, 100, 140);
+                            font-size: 12px;
+                        }
+                    }
+                    
+                    VerticalLayout {
+                        alignment: center;
+                        
+                        USwitch {
+                            checked: dark_mode;
+                            
+                            clicked => {
+                                dark_mode = !dark_mode;
+                                root.theme_changed(dark_mode);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Data Storage Settings
+            Rectangle {
+                background: rgb(20, 15, 50);
+                border-radius: 10px;
+                height: 80px;
+                
+                HorizontalLayout {
+                    padding: 20px;
+                    alignment: space-between;
+                    
+                    VerticalLayout {
+                        alignment: center;
+                        spacing: 5px;
+                        
+                        UText {
+                            text: "Data Location";
+                            color: rgb(200, 200, 220);
+                            font-size: 16px;
+                        }
+                        
+                        UText {
+                            text: "watched_items.json";
+                            color: rgb(100, 100, 140);
+                            font-size: 12px;
+                        }
+                    }
+                    
+                    UButton {
+                        text: "Open";
+                        variant: primary;
+                        background: rgb(30, 0, 105);
+                    }
+                }
+            }
+            
+            // About Section
+            Rectangle {
+                background: rgb(20, 15, 50);
+                border-radius: 10px;
+                height: 100px;
+                
+                HorizontalLayout {
+                    padding: 20px;
+                    alignment: space-between;
+                    
+                    VerticalLayout {
+                        alignment: center;
+                        spacing: 5px;
+                        
+                        UText {
+                            text: "About NightWatch";
+                            color: rgb(200, 200, 220);
+                            font-size: 16px;
+                        }
+                        
+                        UText {
+                            text: "Version 1.0.0";
+                            color: rgb(100, 100, 140);
+                            font-size: 12px;
+                        }
+                        
+                        UText {
+                            text: "Open-source price watching application";
+                            color: rgb(100, 100, 140);
+                            font-size: 12px;
+                        }
+                    }
+                    
+                    UButton {
+                        text: "GitHub";
+                        variant: primary;
+                        background: rgb(30, 0, 105);
+                    }
+                }
+            }
+        }
+    }
+}

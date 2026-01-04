@@ -1,0 +1,45 @@
+import { UAppTheme, UColorScheme } from "../sleek-ui/app-theme.slint";
+import { UText, UTitle } from "../sleek-ui/widgets.slint";
+import "../Fonts/Asimovian-Regular.ttf";
+
+export component HomePage inherits Rectangle {
+    in property <bool> is-active: false;
+    
+    background: transparent;
+    visible: is-active;
+    
+    VerticalLayout {
+        alignment: center;
+        spacing: 20px;
+        padding: 40px;
+        
+        UTitle {
+            level: 2;
+            text: "NightWatch";
+            font-family: "Asimovian";
+            color: rgb(146, 210, 249);
+            horizontal-alignment: center;
+        }
+        
+        UText {
+            text: "Open-Source Price Watcher";
+            color: rgb(180, 200, 230);
+            horizontal-alignment: center;
+            font-size: 18px;
+        }
+        
+        Rectangle {
+            height: 2px;
+            width: 200px;
+            background: rgb(146, 210, 249);
+            border-radius: 1px;
+        }
+        
+        UText {
+            text: "Track product prices from your favorite stores.";
+            color: rgb(120, 160, 200);
+            horizontal-alignment: center;
+            font-size: 14px;
+        }
+    }
+}

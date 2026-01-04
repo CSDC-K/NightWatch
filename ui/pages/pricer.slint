@@ -1,0 +1,172 @@
+import { UAppTheme, UColorScheme } from "../sleek-ui/app-theme.slint";
+import { UText, UTitle, UButton } from "../sleek-ui/widgets.slint";
+import "../Fonts/Asimovian-Regular.ttf";
+
+// Struct for watched item data
+export struct WatchedItem {
+    id: int,
+    name: string,
+    url: string,
+    current_price: string,
+    last_updated: string,
+}
+
+export component PricerPage inherits Rectangle {
+    in property <bool> is-active: false;
+    in property <[WatchedItem]> watched_items: [];
+    
+    callback add_item_clicked();
+    callback remove_item(int);
+    callback refresh_item(int);
+    
+    background: transparent;
+    visible: is-active;
+    
+    VerticalLayout {
+        alignment: start;
+        spacing: 20px;
+        padding: 30px;
+        
+        // Header with title and add button
+        HorizontalLayout {
+            alignment: space-between;
+            
+            UTitle {
+                level: 2;
+                text: "Price Watcher";
+                font-family: "Asimovian";
+                color: rgb(146, 210, 249);
+            }
+            
+            UButton {
+                text: "+ Add Item";
+                variant: primary;
+                background: rgb(30, 0, 105);
+                
+                clicked => {
+                    root.add_item_clicked();
+                }
+            }
+        }
+        
+        Rectangle {
+            height: 1px;
+            background: rgb(50, 50, 80);
+        }
+        
+        // Empty state when no items
+        if watched_items.length == 0: VerticalLayout {
+            vertical-stretch: 1;
+            alignment: center;
+            spacing: 15px;
+            
+            UText {
+                text: "📦";
+                font-size: 48px;
+                horizontal-alignment: center;
+            }
+            
+            UText {
+                text: "No items being watched";
+                color: rgb(150, 150, 180);
+                font-size: 16px;
+                horizontal-alignment: center;
+            }
+            
+            UText {
+                text: "Click '+ Add Item' to start tracking prices";
+                color: rgb(100, 100, 140);
+                font-size: 14px;
+                horizontal-alignment: center;
+            }
+        }
+        
+        // Watched items list
+        if watched_items.length > 0: VerticalLayout {
+            spacing: 10px;
+            
+            for item in watched_items: Rectangle {
+                background: rgb(20, 15, 50);
+                border-radius: 10px;
+                height: 80px;
+                
+                HorizontalLayout {
+                    padding: 15px;
+                    spacing: 15px;
+                    
+                    // Item info
+                    VerticalLayout {
+                        horizontal-stretch: 1;
+                        alignment: center;
+                        spacing: 5px;
+                        
+                        UText {
+                            text: item.name;
+                            color: rgb(200, 200, 220);
+                            font-size: 14px;
+                            overflow: elide;
+                        }
+                        
+                        UText {
+                            text: item.url;
+                            color: rgb(100, 100, 140);
+                            font-size: 11px;
+                            overflow: elide;
+                        }
+                    }
+                    
+                    // Price
+                    VerticalLayout {
+                        alignment: center;
+                        width: 100px;
+                        
+                        UText {
+                            text: item.current_price;
+                            color: rgb(100, 220, 150);
+                            font-size: 18px;
+                            font-weight: 600;
+                            horizontal-alignment: center;
+                        }
+                        
+                        UText {
+                            text: item.last_updated;
+                            color: rgb(100, 100, 140);
+                            font-size: 10px;
+                            horizontal-alignment: center;
+                        }
+                    }
+                    
+                    // Actions
+                    VerticalLayout {
+                        alignment: center;
+                        spacing: 5px;
+                        
+                        UButton {
+                            text: "🔄";
+                            variant: primary;
+                            background: rgb(30, 0, 105);
+                            width: 35px;
+                            height: 30px;
+                            
+                            clicked => {
+                                root.refresh_item(item.id);
+                            }
+                        }
+                        
+                        UButton {
+                            text: "🗑";
+                            variant: primary;
+                            background: rgb(80, 20, 40);
+                            width: 35px;
+                            height: 30px;
+                            
+                            clicked => {
+                                root.remove_item(item.id);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

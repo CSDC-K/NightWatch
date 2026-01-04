@@ -1,113 +1,334 @@
 import { UAppTheme, UColorScheme } from "sleek-ui/app-theme.slint";
-import { UText, UTitle, UPopover, UTabs, UButton, UIconButton } from "sleek-ui/widgets.slint";
-import { SideBar } from "self-widget.slint";
+import { UText, UTitle, UButton, UIconButton, UInput } from "sleek-ui/widgets.slint";
 import "Fonts/Asimovian-Regular.ttf";
 import "Fonts/Kanit-Light.ttf";
-import "Fonts/Ubuntu-Light.ttf";
+import { UTag } from "sleek-ui/widgets/tag.slint";
 export { UAppTheme, UColorScheme }
 
+// Struct for watched item data
+export struct WatchedItem {
+    id: int,
+    name: string,
+    url: string,
+    current_price: string,
+    last_updated: string,
+}
+
 export component AppWindow inherits Window {
-    default-font-family: "Ubuntu";
     width: 900px;
     height: 600px;
     background: rgb(1,4,23);
 
     title: "Night Watch";
 
-    // Property to track sidebar visibility
-    in-out property <bool> sidebar_visible: false;
+    // Property to track current page (0=Home, 1=Settings, 2=Pricer)
+    in-out property <int> current_page: 0;
     
-    // Left rail width and sidebar width for flexible positioning
-    property <length> rail_width: 40px;
-    property <length> sidebar_width: 150px;
+    // Watched items list
+    in-out property <[WatchedItem]> watched_items: [];
+    
+    // Modal state
+    in-out property <bool> show_add_modal: false;
+    in-out property <string> new_item_url: "";
+    in-out property <string> new_item_name: "";
+    
+    // Callbacks for backend communication
+    callback add_item(string, string);
+    callback remove_item(int);
+    callback refresh_item(int);
+    callback theme_changed(bool);
+    callback load_items();
 
-    // Animated SideBar (positioned next to the rail)
-    sidebar := SideBar {
-        x: 40px;
-        y: 0px;
-        
-        states [
-            visible when sidebar_visible: {
-                x: 40px;
-                in { animate x { duration: 300ms; easing: ease-in-out; } }
-                out { animate x { duration: 300ms; easing: ease-in-out; } }
-            }
-            hidden when !sidebar_visible: {
-                x: -110px;
-                in { animate x { duration: 300ms; easing: ease-in-out; } }
-                out { animate x { duration: 300ms; easing: ease-in-out; } }
-            }
-        ]
-    }
-
-    // Main content area with flexible positioning
-    content := Rectangle {
-        x: 40px;
-        y: 0px;
-        width: root.width - 40px;
-        height: parent.height;
-        background: transparent;
-        
-        states [
-            expanded when sidebar_visible: {
-                x: 190px;
-                width: root.width - 190px;
-                in { 
-                    animate x { duration: 300ms; easing: ease-in-out; } 
-                    animate width { duration: 300ms; easing: ease-in-out; }
-                }
-                out { 
-                    animate x { duration: 300ms; easing: ease-in-out; } 
-                    animate width { duration: 300ms; easing: ease-in-out; }
-                }
-            }
-            collapsed when !sidebar_visible: {
-                x: 40px;
-                width: root.width - 40px;
-                in { 
-                    animate x { duration: 300ms; easing: ease-in-out; } 
-                    animate width { duration: 300ms; easing: ease-in-out; }
-                }
-                out { 
-                    animate x { duration: 300ms; easing: ease-in-out; } 
-                    animate width { duration: 300ms; easing: ease-in-out; }
-                }
-            }
-        ]
-
-        UTitle {
-            level: 2;
-            text: "Welcome To NightWatch";
-            font-family: "Asimovian";
-            color: rgb(146,210,249);
-            y: 35px;
-            x: (parent.width - self.preferred-width) / 2;
-        }
-    }
-
-    // Left side rail (thin rectangle covering full height) - on top
+    // Sidebar
     Rectangle {
         x: 0px;
         y: 0px;
-        width: rail_width;
-        height: parent.height;
+        width: 150px;
+        height: root.height;
         background: rgb(15, 2, 50);
-
-        // Toggle button inside the rail
-        UIconButton {
-            x: 5px;
-            y: 10px;
-            width: 30px;
-            height: 30px;
-            icon: sidebar_visible ? @image-url("icons/menu.svg") : @image-url("icons/cross.svg");
-            icon-size: 20px;
-            icon-padding: 0px;
-            colorize-icon: false;
-            variant: primary;
-            background: rgb(30, 0, 105);
+        
+        VerticalLayout {
+            padding: 15px;
+            spacing: 10px;
+            alignment: start;
             
-            clicked => {
-                sidebar_visible = !sidebar_visible;
+            UButton {
+                text: "Home";
+                variant: primary;
+                background: current_page == 0 ? rgb(60, 20, 140) : rgb(30, 0, 105);
+                clicked => { current_page = 0; }
+            }
+            
+            UButton {
+                text: "Settings";
+                variant: primary;
+                background: current_page == 1 ? rgb(60, 20, 140) : rgb(30, 0, 105);
+                clicked => { current_page = 1; }
+            }
+            
+            UButton {
+                text: "Pricer";
+                variant: primary;
+                background: current_page == 2 ? rgb(60, 20, 140) : rgb(30, 0, 105);
+                clicked => { current_page = 2; }
+            }
+
+        }
+
+            UTag {
+                variant: info;
+                text: "Version 0.1";
+                text-color: darkcyan;
+                y: 555px;
+                x: 15px;
+                width: 75px;
+                height: 20px;
+                    
+            }
+
+            UTag {
+                variant: success;
+                text: "Alpha";
+                text-color: darkcyan;
+                y: 555px;
+                x: 15px;
+                width: 50px;
+                height: 20px;
+                border-radius: 1px;
+                    
+            }
+
+
+
+    }
+
+    // Main content area
+    Rectangle {
+        x: 150px;
+        y: 0px;
+        width: root.width - 150px;
+        height: root.height;
+        background: transparent;
+        clip: true;
+
+        // Home Page
+        if current_page == 0: VerticalLayout {
+            alignment: center;
+            spacing: 20px;
+            padding: 40px;
+            
+            UTitle {
+                level: 2;
+                text: "NightWatch";
+                font-family: "Asimovian";
+                color: rgb(146, 210, 249);
+                horizontal-alignment: center;
+            }
+            
+            UText {
+                text: "Open-Source Price Watcher";
+                color: rgb(180, 200, 230);
+                horizontal-alignment: center;
+                font-size: 18px;
+            }
+        }
+        
+        // Settings Page
+        if current_page == 1: VerticalLayout {
+            alignment: start;
+            spacing: 20px;
+            padding: 40px;
+            
+            UTitle {
+                level: 2;
+                text: "Settings";
+                font-family: "Asimovian";
+                color: rgb(146, 210, 249);
+            }
+            
+            Rectangle {
+                background: rgb(20, 15, 50);
+                border-radius: 10px;
+                height: 60px;
+                
+                HorizontalLayout {
+                    padding: 15px;
+                    alignment: space-between;
+                    
+                    UText {
+                        text: "Dark Mode";
+                        color: rgb(200, 200, 220);
+                        font-size: 16px;
+                        vertical-alignment: center;
+                    }
+                    
+                    UButton {
+                        text: "Toggle";
+                        variant: primary;
+                        background: rgb(30, 0, 105);
+                        clicked => { root.theme_changed(true); }
+                    }
+                }
+            }
+        }
+        
+        // Pricer Page
+        if current_page == 2: VerticalLayout {
+            alignment: start;
+            spacing: 20px;
+            padding: 30px;
+            
+            HorizontalLayout {
+                alignment: space-between;
+                
+                UTitle {
+                    level: 2;
+                    text: "Price Watcher";
+                    font-family: "Asimovian";
+                    color: rgb(146, 210, 249);
+                }
+                
+                UButton {
+                    text: "+ Add Item";
+                    variant: primary;
+                    background: rgb(30, 0, 105);
+                    clicked => { root.show_add_modal = true; }
+                }
+            }
+            
+            Rectangle {
+                height: 1px;
+                background: rgb(50, 50, 80);
+            }
+            
+            if watched_items.length == 0: VerticalLayout {
+                alignment: center;
+                spacing: 15px;
+                vertical-stretch: 1;
+                
+                UText {
+                    text: "No items being watched";
+                    color: rgb(150, 150, 180);
+                    font-size: 16px;
+                    horizontal-alignment: center;
+                }
+            }
+            
+            for item in watched_items: Rectangle {
+                background: rgb(20, 15, 50);
+                border-radius: 10px;
+                height: 70px;
+                
+                HorizontalLayout {
+                    padding: 15px;
+                    spacing: 15px;
+                    
+                    VerticalLayout {
+                        horizontal-stretch: 1;
+                        alignment: center;
+                        spacing: 5px;
+                        
+                        UText {
+                            text: item.name;
+                            color: rgb(200, 200, 220);
+                            font-size: 14px;
+                        }
+                        
+                        UText {
+                            text: item.url;
+                            color: rgb(100, 100, 140);
+                            font-size: 11px;
+                        }
+                    }
+                    
+                    UText {
+                        text: item.current_price;
+                        color: rgb(100, 220, 150);
+                        font-size: 16px;
+                        vertical-alignment: center;
+                    }
+                    
+                    UButton {
+                        text: "X";
+                        variant: primary;
+                        background: rgb(80, 20, 40);
+                        width: 35px;
+                        clicked => { root.remove_item(item.id); }
+                    }
+                }
+            }
+        }
+    }
+    
+    // Modal overlay
+    Rectangle {
+        x: 0;
+        y: 0;
+        width: root.width;
+        height: root.height;
+        background: rgba(0, 0, 0, 0.7);
+        visible: show_add_modal;
+        
+        TouchArea {
+            clicked => { show_add_modal = false; }
+        }
+        
+        Rectangle {
+            x: (root.width - 400px) / 2;
+            y: (root.height - 280px) / 2;
+            width: 400px;
+            height: 280px;
+            background: rgb(20, 15, 50);
+            border-radius: 15px;
+            
+            TouchArea {}
+            
+            VerticalLayout {
+                padding: 25px;
+                spacing: 15px;
+                
+                UTitle {
+                    level: 4;
+                    text: "Add Item to Watch";
+                    color: rgb(146, 210, 249);
+                }
+                
+                UText { text: "Item Name"; color: rgb(200, 200, 220); font-size: 14px; }
+                
+                UInput {
+                    placeholder: "e.g. Gaming Laptop";
+                    text <=> root.new_item_name;
+                }
+                
+                UText { text: "Product URL"; color: rgb(200, 200, 220); font-size: 14px; }
+                
+                UInput {
+                    placeholder: "https://example.com/product";
+                    text <=> root.new_item_url;
+                }
+                
+                HorizontalLayout {
+                    spacing: 10px;
+                    alignment: end;
+                    
+                    UButton {
+                        text: "Cancel";
+                        variant: default;
+                        clicked => { show_add_modal = false; }
+                    }
+                    
+                    UButton {
+                        text: "Add";
+                        variant: primary;
+                        background: rgb(30, 0, 105);
+                        clicked => {
+                            if new_item_url != "" && new_item_name != "" {
+                                root.add_item(new_item_name, new_item_url);
+                            }
+                            show_add_modal = false;
+                        }
+                    }
+                }
             }
         }
     }
